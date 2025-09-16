@@ -1,10 +1,9 @@
 from flask import Flask, request, jsonify
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 app = Flask(__name__)
-translator = Translator()
 
-# Simple knowledge base (later we connect DB or curriculum)
+# Simple knowledge base
 faq = {
     "what is cgpa": "CGPA is Cumulative Grade Point Average, calculated across semesters.",
     "library timing": "The library is open from 9 AM to 6 PM on weekdays.",
@@ -21,18 +20,18 @@ def chat():
     user_text = data.get("question", "")
     user_lang = data.get("lang", "en")
 
-    # Translate to English for processing
-    translated = translator.translate(user_text, src=user_lang, dest="en").text.lower()
+    # Translate to English
+    translated = GoogleTranslator(source=user_lang, target="en").translate(user_text).lower()
 
-    # Find answer in knowledge base
+    # Find answer
     response = "Sorry, I don’t know. Assigning to staff..."
     for q, ans in faq.items():
         if q in translated:
             response = ans
             break
 
-    # Translate answer back to user’s language
-    final_response = translator.translate(response, src="en", dest=user_lang).text
+    # Translate back
+    final_response = GoogleTranslator(source="en", target=user_lang).translate(response)
 
     return jsonify({"answer": final_response})
 
